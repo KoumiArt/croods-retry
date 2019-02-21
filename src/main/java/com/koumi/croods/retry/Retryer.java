@@ -10,10 +10,10 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import in.togetu.croods.retry.listener.RetryContext;
-import in.togetu.croods.retry.listener.RetryListener;
-import in.togetu.croods.retry.strategy.FixedDelayRetryStrategy;
-import in.togetu.croods.retry.strategy.RetryStrategy;
+import com.koumi.croods.retry.listener.RetryContext;
+import com.koumi.croods.retry.listener.RetryListener;
+import com.koumi.croods.retry.strategy.FixedDelayRetryStrategy;
+import com.koumi.croods.retry.strategy.RetryStrategy;
 
 /**
  * @author nicksun
