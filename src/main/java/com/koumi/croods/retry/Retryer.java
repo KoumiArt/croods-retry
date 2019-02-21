@@ -3,15 +3,17 @@ package com.koumi.croods.retry;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.koumi.croods.retry.listener.RetryContext;
-import com.koumi.croods.retry.listener.RetryListener;
-import com.koumi.croods.retry.strategy.FixedDelayRetryStrategy;
-import com.koumi.croods.retry.strategy.RetryStrategy;
+import in.togetu.croods.retry.listener.RetryContext;
+import in.togetu.croods.retry.listener.RetryListener;
+import in.togetu.croods.retry.strategy.FixedDelayRetryStrategy;
+import in.togetu.croods.retry.strategy.RetryStrategy;
 
 /**
  * @author nicksun
@@ -34,7 +36,46 @@ public class Retryer {
 			this.strategy = new FixedDelayRetryStrategy(3);
 		}
 	}
+	
+	/**
+	 * Handle RuntimeException
+	 * 
+	 * @param supplier
+	 */
+	public <T> void call(Supplier<T> supplier) {
+		call(null, p -> {
+			return supplier.get();
+		});
+	}
+	
+	/**
+	 * Handle RuntimeException
+	 * @param runnable
+	 */
+	public void call(Runnable runnable) {
+		call(() -> {
+			runnable.run();
+			return null;
+		});
+	}
+	
+	/**
+	 * Handle RuntimeException
+	 * @param params
+	 * @param con
+	 */
+	public <T> void call(T params, Consumer<T> consumer) {
+		call(params, p -> {
+			consumer.accept(params);
+			return null;
+		});
+	}
 
+	/**
+	 * Handle Exception
+	 * @param params
+	 * @param func
+	 */
 	public <T, R> void call(T params, RetryFunction<T, R> func) {
 		int num = strategy.numOfRetry();
 		R r = null;
@@ -53,10 +94,12 @@ public class Retryer {
 			if (strategy.block()) {
 				retry(num, params, func);
 			} else {
-				new Timer().schedule(new TimerTask() {
+				Timer timer = new Timer();
+				timer.schedule(new TimerTask() {
 					@Override
 					public void run() {
 						retry(num, params, func);
+						timer.cancel();
 					}
 				}, strategy.waitTime());
 			}
