@@ -38,7 +38,7 @@ public class LevelRetryStrategy implements RetryStrategy {
 
 	@Override
 	public long waitTime() {
-		return queue.poll();
+		return queue.peek();
 	}
 
 }
